@@ -1,0 +1,20 @@
+[rhel-8-BaseOS]
+name=Red Hat Enterprise Linux $releasever - $basearch - Source
+baseurl=ftp://rhel8yum.gl.company.com/pub/updates/rhel-8-for-x86_64-baseos-rpms
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+
+[rhel-8-AppStream]
+name=Red Hat Enterprise Linux $releasever - $basearch - Source
+baseurl=ftp://rhel8yum.gl.company.com/pub/updates/rhel-8-for-x86_64-appstream-rpms
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+
+[rhel-8-Codeready]
+name=Red Hat Enterprise Linux $releasever - $basearch - Source
+baseurl=ftp://rhel8yum.gl.company.com/pub/updates/codeready-builder-for-rhel-8-x86_64-rpms
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release

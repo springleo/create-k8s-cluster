@@ -1,0 +1,24 @@
+[containerlab]
+10.133.32.53_k8smaster    Mgmt_network_ipv4='10.133.32.53'  vsphere_vm_hostname='k8s-master'
+10.133.32.54_k8sworker01  Mgmt_network_ipv4='10.133.32.54'  vsphere_vm_hostname='k8s-worker01'
+10.133.32.58_k8sworker02  Mgmt_network_ipv4='10.133.32.58'  vsphere_vm_hostname='k8s-worker02'
+ansible_hostname=10.133.32.202
+[master]
+10.133.32.53
+
+[workers]
+10.133.32.54
+10.133.32.58
+
+# Node Groups
+[nodes:children]
+master
+workers
+
+[nodes:vars]
+ansible_connection=ssh
+ansible_user=root
+ansible_python_interpreter=/usr/bin/python3
+ansible_password=company123$
+ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+

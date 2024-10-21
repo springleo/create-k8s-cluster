@@ -1,0 +1,17 @@
+---
+- name: copy helm to master
+  copy:
+    src: "{{ role_path }}/files/{{ item }}"
+    dest:  /root/{{ item }}
+    owner: root
+    group: root
+    mode: '0644'
+  with_items:
+    - get_helm.sh
+     
+- name: install helm
+  shell: |
+    sh /root/get_helm.sh
+
+
+

@@ -1,0 +1,95 @@
+---
+- name: Load br_netfilter and overlay modules required for CRI-O
+  command: modprobe {{ item }}
+  with_items:
+    - overlay  
+    - br_netfilter
+
+- name: Add the overlay and br_netfilter across reboot
+  copy:
+    src: "{{ role_path }}/files/{{ item }}"
+    dest: /etc/modules-load.d/{{ item }}
+    owner: root
+    group: root
+    mode: '0644'
+  with_items:
+    - k8smodules.conf    
+
+- name: Configure the required sysctl parameters
+  copy:
+    src: "{{ role_path }}/files/{{ item }}"
+    dest: /etc/sysctl.d/{{ item }}
+    owner: root
+    group: root
+    mode: '0644'
+  with_items:
+    - k8s.conf  
+
+- name: Load the sysctl modules
+  shell: sysctl --system
+
+- name: Configure the yum repo for cri-o and kubernetes
+  copy:
+    src: "{{ role_path }}/files/{{ item }}"
+    dest: /etc/yum.repos.d/{{ item }}
+    owner: root
+    group: root
+    mode: '0644'
+  with_items:
+    - cri-o.repo
+    - kubernetes.repo    
+
+- name: Install the CRI-O binaries
+  package:
+    name: "{{ item }}"
+    state: present  
+  with_items:
+    - cri-o
+    - cri-tools
+
+- name: Install Kubernetes binaries
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - kubelet-{{ Kubernetes_Version }}
+    - kubeadm-{{ Kubernetes_Version }}
+    - kubectl-{{ Kubernetes_Version }}
+
+- name: Start and enable the crio service
+  systemd:
+    name: crio
+    state: started
+    enabled: yes  
+
+- name: Enable the kubelet service
+  systemd:
+    name: kubelet
+    enabled: yes  
+
+- name: Initialize the kubernetes cluster
+  command: kubeadm init --apiserver-advertise-address="{{ k8s_master_ip }}" --apiserver-cert-extra-sans="{{ k8s_master_ip }}"  --node-name k8smaster --pod-network-cidr="{{ pod_network }}"  
+      
+- name: Generate the kubernetes cluster access
+  shell: |
+    mkdir -p $HOME/.kube
+    sudo cp -f /etc/kubernetes/admin.conf $HOME/.kube/config
+    sudo chown $(id -u):$(id -g) $HOME/.kube/config     
+
+- name: Get the token for joining the worker nodes
+  shell: kubeadm token create  --print-join-command
+  register: node_join_command
+
+- debug:
+    msg: "{{ node_join_command.stdout }}"
+
+- name: Copy join command to ansible server
+  local_action: copy content="{{ node_join_command.stdout_lines[0] }}" dest="/tmp/node_join_command" mode=0755
+
+- name: Install the Tigera Calico operator
+  command: kubectl create -f https://docs.tigera.io/manifests/tigera-operator.yaml
+
+
+- name: Install Calico by creating the necessary custom resource
+  command: kubectl create -f https://docs.tigera.io/manifests/custom-resources.yaml
+

@@ -1,0 +1,90 @@
+---
+- name: Set timezone
+  timezone:
+    name: '{{ timezone }}'
+
+- name: Copy company IT Certificate
+  copy:
+    src: "{{ role_path }}/files/{{ item }}"
+    dest: /etc/pki/ca-trust/source/anchors/
+    owner: root
+    group: root
+    mode: '0644'
+  with_items:
+    - companyITrootCA2.crt
+    - companyITserverCA2.crt
+    - Zscaler.crt
+
+- name: Install company IT certificate
+  shell: update-ca-trust
+  register: result
+
+- debug: var=result  
+
+- name: Configure the rhel8 yum repo
+  copy:
+    src: "{{ role_path }}/files/lab.repo"
+    dest: /etc/yum.repos.d/lab.repo
+    owner: root
+    group: root
+    mode: '0644'      
+
+- name: Copy the chronyd file
+  copy:
+    src: "{{ role_path }}/files/chronyd"
+    dest: /etc/sysconfig/chronyd
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Copy the chrony.conf template file
+  template:  src="{{ role_path }}/files/chrony.conf.j2"  dest=/etc/chrony.conf
+
+- name: Set the NTP to true
+  command: "{{ item }}"
+  with_items:
+    - timedatectl set-ntp true
+
+- name: Start and enable chronyd
+  systemd:
+    name: chronyd
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+
+- name: Stop and disable the firewalld
+  systemd:
+    name: firewalld
+    enabled: no
+    state: stopped
+    masked: yes  
+
+- name: Disable SELinux
+  selinux:
+    state: disabled
+
+- name: Install supporting packages
+  package:
+    name: '{{ item }}'
+    state: latest    
+  with_items:
+    - telnet
+    - elinks
+    - iproute-tc  
+
+- name: Remove swapfile from /etc/fstab
+  mount:
+    name: "{{ item }}"
+    fstype: swap
+    state: absent
+  with_items:
+    - swap
+    - none
+
+- name: Disable swap
+  command: swapoff -a
+
+- name: Reboot the system post change
+  reboot:
+    reboot_timeout: 300
+    msg: "Reboot initiated by Ansible"

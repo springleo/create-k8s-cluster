@@ -1,0 +1,37 @@
+# vCenter Login Information
+vcenter_hostname: 'insntdevfarm.apac.company.com'
+vcenter_username: 'flexforaads@global.company.com'
+vcenter_password: 'Ej7i$PVjiO#zaQNpdlfwG'
+
+# Variable entries for Linux virtual machine
+vsphere_datacenter: 'Pune_Shared'
+resource_pool: 'Cluster2_UCA-Dev'
+
+# VM Network Components
+Mgmt_network: 'C2DPG_10_133_32_X'
+Mgmt_network_nmv4: '255.255.255.0'
+Mgmt_network_gwv4: '10.133.32.1'
+
+# Tempalate of RHEL Server
+lin_temp: 'rhel-8.6-k8s-template'
+wdc_vm_name: '{{ lin_temp }}'
+
+# Timezone and NTP Server
+# Use below command on a linux system to get timezone:
+## timedatectl list-timezones
+timezone: 'Etc/UTC'
+ntp_server:
+  - 'drtime.dr.company.com'
+  - '135.9.1.2'
+
+# DNS server details
+dns_server1: '135.10.209.250'
+dns_server2: '198.152.8.11'
+dns_domain: 'apac.company.com'
+
+# Kubernetes Specific Parameters
+# Use a privae subnet as per RFC standard
+# Check github kops issue#13406 for more info
+pod_network: '192.168.0.0/16'   
+k8s_master_ip: '10.133.32.53'   
+Kubernetes_Version: 1.25.3

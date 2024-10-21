@@ -1,0 +1,109 @@
+# VM Deploy, Guest OS customizationa and Delete plays
+- hosts: containerlab
+  connection: local
+  tags: deploy
+  gather_facts: no
+
+  tasks:
+    - name: Deploy the kubernetes servers
+      include_role:
+        name: deploy
+
+
+- hosts: nodes
+  connection: ssh
+  tags: oscustom
+  gather_facts: no
+
+  tasks:
+    - ping:
+
+    - name: Customize the kubernetes servers
+      include_role:
+        name: gocustom
+
+# VM snapshot managment plays
+- hosts: containerlab
+  connection: local
+  tags: vmsnapshot
+  gather_facts: no
+
+  tasks:
+    - name: Take the snapshot of kubernetes servers
+      include_role:
+        name: vmsnapshot
+
+# Kubernetes Cluster Configuration plays
+- hosts: master
+  connection: ssh
+  tags: mastersetup
+  gather_facts: no
+
+  tasks:
+    - ping:
+
+    - name: Setup the kubernetes master node
+      include_role:
+        name: mastersetup
+
+# Kubernetes Cluster go install
+- hosts: master
+  connection: ssh
+  tags: gosetup
+  gather_facts: no
+
+  tasks:
+    - ping:
+
+    - name: install the go lang
+      include_role:
+        name: gosetup
+
+# Kubernetes Cluster helm install
+- hosts: master
+  connection: ssh
+  tags: helm
+  gather_facts: no
+
+  tasks:
+    - ping:
+
+    - name: install helm
+      include_role:
+        name: helm
+# Kubernetes exchange key
+- hosts: master
+  connection: ssh
+  tags: keyexchange
+  gather_facts: no
+
+  tasks:
+    - ping:
+
+    - name: SSH KeyGen command
+      include_role:
+        name: keyexchange
+
+- hosts: workers
+  connection: ssh
+  tags: nodesetup
+  gather_facts: no
+
+  tasks:
+    - ping:
+
+    - name: Setup the the kubernetes worker nodes
+      include_role:
+        name: nodesetup          
+
+- hosts: master
+  connection: ssh
+  tags: nodelabel
+  gather_facts: no
+
+  tasks:
+    - ping:
+
+    - name: Label the kubernetes worker nodes
+      include_role:
+        name: nodelabel

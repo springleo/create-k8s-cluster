@@ -1,0 +1,24 @@
+---
+- name: remove exesting go lang
+  shell: |
+    rm -rf /usr/lib/golang/bin/go
+  
+- name: copy go lang to new loaction
+  copy:
+    src: "{{ role_path }}/files/{{ item }}"
+    dest: /root/{{ item }}
+    owner: root
+    group: root
+    mode: '0644'
+  with_items:
+    - go1.19.1.linux-amd64.tar.gz
+ 
+- name: install  go lang
+  shell: |
+    tar -C /usr/local -xvzf go1.19.1.linux-amd64.tar.gz
+    echo "PATH=\$PATH:\$HOME/bin:/usr/local/go/bin" >>  /root/.bash_profile
+    echo "export GOPATH=\"\$HOME\"" >> /root/.bash_profile
+    echo "export GOBIN=\"\$GOPATH/bin\"" >> /root/.bash_profile
+    
+
+
